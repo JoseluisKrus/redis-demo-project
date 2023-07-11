@@ -1,13 +1,27 @@
 const express = require("express");
 const redis = require("redis");
 
-const redisURL = "redis://127.0.0.1:6379";
-const client = redis.createClient(redisURL);
-
-
 const app = express();
-app.use(express.json())
+const client = redis.createClient();
 
-app.listen(8080, () =>{
-    console.log("Hey, now listening on port 8080!")
-})
+client.on("error", (err) => console.log("Redis Client Error", err));
+
+app.use(express.json());
+
+app.post("/", async (req, res) => {
+  const { key, value } = req.body;
+  try {
+    await client.connect();
+    await client.set(key, value);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  } finally {
+    client.quit();
+  }
+});
+
+const port = 8080;
+app.listen(port, () => {
+  console.log(`Hey, now listening on port ${port}!`);
+});
