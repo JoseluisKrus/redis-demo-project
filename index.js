@@ -2,7 +2,9 @@ const express = require("express");
 const redis = require("redis");
 
 const app = express();
-const client = redis.createClient();
+const client = redis.createClient({
+  url: "redis://redis:6379",
+});
 
 client.on("error", (err) => console.log("Redis Client Error", err));
 
@@ -21,18 +23,18 @@ app.post("/", async (req, res) => {
   }
 });
 
-app.get("/", async(req, res) => {
-    const { key } = req.body;
-    try {
-        await client.connect();
-        const value = await client.get(key);
-        res.json(value);
-      } catch (error) {
-        res.status(500).json({ error: error.message });
-      } finally {
-        client.quit();
-      }
-})
+app.get("/", async (req, res) => {
+  const { key } = req.body;
+  try {
+    await client.connect();
+    const value = await client.get(key);
+    res.json(value);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  } finally {
+    client.quit();
+  }
+});
 
 app.get("/posts/:id", async (req, res) => {
   const { id } = req.params;
