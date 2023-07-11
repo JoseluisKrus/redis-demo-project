@@ -49,7 +49,7 @@ app.get("/posts/:id", async (req, res) => {
     );
     const data = await response.json();
 
-    await client.set(`post-${id}`, JSON.stringify(data));
+    await client.setEx(`post-${id}`, 10, JSON.stringify(data));
 
     return res.json(data);
   } catch (error) {
