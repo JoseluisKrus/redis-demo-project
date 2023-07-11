@@ -21,6 +21,19 @@ app.post("/", async (req, res) => {
   }
 });
 
+app.get("/", async(req, res) => {
+    const { key } = req.body;
+    try {
+        await client.connect();
+        const value = await client.get(key);
+        res.json(value);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      } finally {
+        client.quit();
+      }
+})
+
 const port = 8080;
 app.listen(port, () => {
   console.log(`Hey, now listening on port ${port}!`);
