@@ -34,6 +34,29 @@ app.get("/", async(req, res) => {
       }
 })
 
+app.get("/posts/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    await client.connect();
+    const cachedPost = await client.get(`post-${id}`);
+    if (cachedPost) {
+      return res.json(JSON.parse(cachedPost));
+    }
+    const response = await fetch(
+      `https://jsonplaceholder.typicode.com/posts/${id}`
+    );
+    const data = await response.json();
+
+    await client.set(`post-${id}`, JSON.stringify(data));
+
+    return res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  } finally {
+    client.quit();
+  }
+});
+
 const port = 8080;
 app.listen(port, () => {
   console.log(`Hey, now listening on port ${port}!`);
